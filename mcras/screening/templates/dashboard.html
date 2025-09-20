@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white shadow rounded p-6">
+  <h2 class="text-lg font-semibold mb-4">Recruiter Dashboard</h2>
+
+  <div class="mb-4">
+    <button id="refresh" class="px-3 py-2 bg-slate-700 text-white rounded">Refresh</button>
+  </div>
+
+  <div id="candidates" class="space-y-4">
+    <!-- Candidate rows will be injected here -->
+  </div>
+</div>
+
+<script>
+async function loadCandidates() {
+  const res = await fetch('/api/candidates/');
+  const json = await res.json();
+  const container = document.getElementById('candidates');
+  container.innerHTML = '';
+  for (const c of json.results || json) {
+    const el = document.createElement('div');
+    el.className = 'p-4 border rounded flex justify-between items-center';
+    el.innerHTML = `
+      <div>
+        <div class="font-semibold">${c.first_name || ''} ${c.last_name || ''} <span class="text-sm text-slate-500">(${c.email || ''})</span></div>
+        <div class="text-sm text-slate-600">Applied to: ${c.applied_to}</div>
+        <div class="text-sm mt-1">Score: <span class="font-medium">${c.score ?? 'N/A'}</span> — ${c.verdict ?? ''}</div>
+        <div class="text-sm text-amber-600 mt-1">Missing: ${ (c.missing_skills || []).join(', ') }</div>
+        <div class="text-sm text-slate-700 mt-1">${c.feedback || ''}</div>
+      </div>
+      <div class="flex flex-col gap-2 items-end">
+        <a class="px-3 py-1 bg-indigo-600 text-white rounded text-sm" href="/media/${c.resume}" target="_blank">Resume</a>
+      </div>
+    `;
+    container.appendChild(el);
+  }
+}
+
+document.getElementById('refresh').addEventListener('click', loadCandidates);
+window.addEventListener('load', loadCandidates);
+</script>
+{% endblock %}
