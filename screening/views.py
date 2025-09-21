@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import render
 from django.db import transaction
 import logging
-
+from .scoring import verdict as score_verdict
 from .models import JobDescription, Candidate
 from .serializers import JobDescriptionSerializer, CandidateSerializer
 from .utils import extract_text, transcribe_video, analyze_resume_with_gemini
@@ -13,7 +13,7 @@ from .scoring import tokenize_skills, hard_skill_score, semantic_score, final_sc
 
 logger = logging.getLogger(__name__)
 
-# frontend views
+
 def home(request):
     return render(request, "home.html")
 
@@ -32,14 +32,10 @@ class JobCreateView(generics.CreateAPIView):
     serializer_class = JobDescriptionSerializer
 
     def perform_create(self, serializer):
-        # Get data
+      
         jd_text = serializer.validated_data.get("raw_text", "")
         title = serializer.validated_data.get("title", "").strip() or "Untitled Job"
-
-        # Parse keywords
         parsed = tokenize_skills(jd_text)
-
-        # Save JobDescription
         serializer.save(title=title, raw_text=jd_text, parsed_keywords=parsed)
 
 from rest_framework.views import APIView
@@ -57,7 +53,6 @@ class UploadPDFJobView(APIView):
             return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Save temporarily
             file_path = default_storage.save('tmp/' + pdf_file.name, pdf_file)
             with default_storage.open(file_path, 'rb') as f:
                 reader = PyPDF2.PdfReader(f)
@@ -65,12 +60,10 @@ class UploadPDFJobView(APIView):
                 for page in reader.pages:
                     text += page.extract_text() + "\n"
 
-            # Extract title as first line, rest as description
+        
             lines = [line.strip() for line in text.split("\n") if line.strip()]
             title = lines[0][:255] if lines else "Untitled Job"
             raw_text = "\n".join(lines[1:]).strip() if len(lines) > 1 else text
-
-            # Use the same serializer to save and parse keywords
             serializer = JobDescriptionSerializer(data={"title": title, "raw_text": raw_text})
             serializer.is_valid(raise_exception=True)
             serializer.save(parsed_keywords=tokenize_skills(raw_text))
@@ -87,15 +80,6 @@ class JobListView(generics.ListAPIView):
     serializer_class = JobDescriptionSerializer
 
 
-from rest_framework import generics, status
-from rest_framework.response import Response
-from django.db import transaction
-from .models import Candidate
-from .serializers import CandidateSerializer
-from .utils import extract_text, transcribe_video, analyze_resume_with_gemini
-from .scoring import verdict as score_verdict
-import logging
-
 logger = logging.getLogger(__name__)
 
 class CandidateCreateView(generics.CreateAPIView):
@@ -106,23 +90,16 @@ class CandidateCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         email = serializer.validated_data.get('email').strip().lower()
         applied_to = serializer.validated_data.get('applied_to')
-
-        # Check if candidate already exists for this job
         candidate = Candidate.objects.filter(email=email, applied_to=applied_to).first()
         if candidate:
-            # Update existing candidate with new data
             for field, value in serializer.validated_data.items():
                 setattr(candidate, field, value)
             created = False
         else:
             candidate = serializer.save()
             created = True
-
-        # 1) Extract resume text
         resume_text = extract_text(candidate.resume) or ""
         candidate.parsed_text = resume_text
-
-        # 2) Transcribe video if present
         if candidate.video and getattr(candidate.video, "path", None):
             try:
                 video_text = transcribe_video(candidate.video.path) or ""
@@ -130,10 +107,8 @@ class CandidateCreateView(generics.CreateAPIView):
             except Exception as e:
                 logger.exception("Video transcription failed: %s", e)
 
-        # 3) Analyze resume vs JD
         analysis = analyze_resume_with_gemini(candidate.applied_to.raw_text, resume_text)
 
-        # 4) Save all scoring components
         candidate.final_score = analysis.get("final_score")
         candidate.local_score = analysis.get("local_score")
         candidate.gemini_score = analysis.get("gemini_score")
@@ -141,8 +116,6 @@ class CandidateCreateView(generics.CreateAPIView):
         candidate.matched_keywords = analysis.get("matched_keywords", [])
         candidate.missing_skills = analysis.get("missing_skills", [])
         candidate.feedback = analysis.get("feedback", "")
-
-        # 5) Use final_score as main score for verdict
         candidate.score = candidate.final_score
         candidate.verdict = score_verdict(candidate.score)
 
@@ -190,3 +163,4 @@ def job_list(request):
 class JobDetailAPIView(generics.RetrieveAPIView):
     queryset = JobDescription.objects.all()
     serializer_class = JobDescriptionSerializer
+
