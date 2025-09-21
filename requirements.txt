@@ -1,0 +1,12 @@
+django
+djangorestframework
+gunicorn
+psycopg2-binary
+pandas
+numpy
+scikit-learn
+spacy
+sentence-transformers
+pdfplumber
+python-docx
+requests
