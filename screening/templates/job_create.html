@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8">
+
+  <!-- Page Heading -->
+  <h2 class="text-3xl font-bold text-gray-800 text-center mb-6">Upload Job Description</h2>
+
+  <!-- Upload Method Selector -->
+  <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 shadow-md rounded-lg p-5 flex justify-center gap-6">
+    <button type="button" id="manual-btn" class="upload-btn selected">Manual Entry</button>
+    <button type="button" id="pdf-btn" class="upload-btn">Upload PDF</button>
+  </div>
+
+  <!-- Manual JD Form -->
+  <form id="jd-form" class="bg-white shadow-2xl rounded-3xl p-8 space-y-6 transition-all duration-300">
+    <h3 class="text-2xl font-semibold text-gray-800 text-center">Manual Entry</h3>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Job Title</label>
+        <input id="title" type="text" placeholder="e.g. ML Engineer" required
+          class="mt-1 block w-full rounded-full border-gray-300 shadow-inner focus:ring-indigo-500 focus:border-indigo-500 px-5 py-3 transition duration-300 text-gray-700 placeholder-gray-400"/>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Job Description</label>
+        <textarea id="raw_text" rows="6" placeholder="Paste JD text here" required
+          class="mt-1 block w-full rounded-2xl border-gray-300 shadow-inner focus:ring-indigo-500 focus:border-indigo-500 px-5 py-3 transition duration-300 text-gray-700 placeholder-gray-400"></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-center items-center gap-4">
+      <button type="submit"
+        class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-full shadow-lg hover:from-indigo-600 hover:to-indigo-700 transition duration-300 font-semibold">
+        Create JD
+      </button>
+      <div id="jd-msg" class="text-sm text-green-600 mt-1"></div>
+    </div>
+  </form>
+
+  <!-- PDF Upload Form -->
+  <form id="pdf-form" class="bg-white shadow-2xl rounded-3xl p-8 space-y-6 hidden transition-all duration-300" enctype="multipart/form-data">
+    <h3 class="text-2xl font-semibold text-gray-800 text-center">Upload PDF</h3>
+
+    <div class="space-y-4">
+      <label class="block text-sm font-medium text-gray-600 mb-1">Select JD PDF</label>
+
+      <!-- Custom File Upload -->
+      <div id="file-upload" class="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl h-40 cursor-pointer hover:border-indigo-500 transition-all duration-300">
+        <input id="jd-pdf" type="file" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+        <div class="text-center">
+          <svg class="mx-auto mb-2 w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v6m0-6l-3 3m3-3l3 3M12 2v6"/>
+          </svg>
+          <p class="text-gray-500">Drag & Drop PDF here or click to browse</p>
+          <p id="file-name" class="text-sm text-gray-700 mt-1"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-center items-center gap-4">
+      <button type="submit"
+        class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-full shadow-lg hover:from-indigo-600 hover:to-indigo-700 transition duration-300 font-semibold">
+        Extract & Create JD
+      </button>
+      <div id="pdf-msg" class="text-sm text-green-600 mt-1"></div>
+    </div>
+  </form>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 w-96 max-w-full shadow-lg transform scale-95 transition-transform duration-300">
+    <button id="closeSuccessModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl font-bold">&times;</button>
+    <div class="mt-4 text-center">
+      <h3 class="text-xl font-semibold text-gray-700">Job Created Successfully!</h3>
+      <p class="mt-2 text-gray-600">Job ID: <span id="modalJobId"></span></p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Circular button selector */
+.upload-btn {
+  border: 2px solid #c7d2fe;
+  border-radius: 9999px;
+  padding: 0.5rem 1.5rem;
+  background-color: white;
+  color: #4f46e5;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.upload-btn.selected {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+.upload-btn:hover {
+  background-color: #6366f1;
+  color: white;
+}
+</style>
+
+<script>
+// Toggle forms based on circular buttons
+const manualBtn = document.getElementById('manual-btn');
+const pdfBtn = document.getElementById('pdf-btn');
+const jdForm = document.getElementById('jd-form');
+const pdfForm = document.getElementById('pdf-form');
+
+manualBtn.addEventListener('click', () => {
+  manualBtn.classList.add('selected');
+  pdfBtn.classList.remove('selected');
+  jdForm.classList.remove('hidden');
+  pdfForm.classList.add('hidden');
+});
+
+pdfBtn.addEventListener('click', () => {
+  pdfBtn.classList.add('selected');
+  manualBtn.classList.remove('selected');
+  pdfForm.classList.remove('hidden');
+  jdForm.classList.add('hidden');
+});
+
+// Show selected file name
+const fileInput = document.getElementById('jd-pdf');
+const fileNameDisplay = document.getElementById('file-name');
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  fileNameDisplay.textContent = file ? file.name : '';
+});
+
+// CSRF helper
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+
+// Success modal
+const successModal = document.getElementById('successModal');
+const modalJobId = document.getElementById('modalJobId');
+const closeSuccessModal = document.getElementById('closeSuccessModal');
+
+function showSuccessModal(jobId) {
+  modalJobId.textContent = jobId;
+  successModal.classList.remove('hidden');
+}
+
+closeSuccessModal.onclick = () => {
+  successModal.classList.add('hidden');
+};
+
+// Manual JD submission
+jdForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = document.getElementById('title').value;
+  const raw_text = document.getElementById('raw_text').value;
+  const msg = document.getElementById('jd-msg');
+
+  const res = await fetch('/api/jobs/create/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ title, raw_text })
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    msg.textContent = "Job successfully created!";
+    showSuccessModal(data.id);
+    jdForm.reset();
+  } else {
+    const text = await res.text();
+    msg.textContent = 'Error: ' + text;
+  }
+});
+
+// PDF JD submission
+pdfForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!fileInput.files.length) return alert('Please select a PDF!');
+  const formData = new FormData();
+  formData.append('pdf', fileInput.files[0]);
+  const msg = document.getElementById('pdf-msg');
+
+  const res = await fetch('/api/jobs/upload_pdf/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    body: formData
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    msg.textContent = "Job successfully created from PDF!";
+    showSuccessModal(data.id);
+    pdfForm.reset();
+    fileNameDisplay.textContent = '';
+  } else {
+    const text = await res.text();
+    msg.textContent = 'Error: ' + text;
+  }
+});
+</script>
+{% endblock %}

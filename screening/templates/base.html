@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MCRAS — Demo</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#4f46e5', // Indigo-600
+              secondary: '#f59e0b', // Amber-500
+            },
+          },
+        },
+        plugins: [window.tailwindcss && tailwindcss_forms ? tailwindcss_forms : {}]
+      }
+    </script>
+  </head>
+  <body class="bg-gray-50 text-gray-900 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <a href="{% url 'home' %}" class="font-bold text-2xl text-primary hover:text-indigo-700 transition">MCRAS</a>
+          <div class="flex space-x-6 items-center">
+            <a href="{% url 'ui-job-create' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-primary transition">Upload JD</a>
+            <a href="{% url 'ui-candidate-create' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-primary transition">Apply (Candidate)</a>
+            <a href="{% url 'ui-dashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-primary transition">Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      {% block content %}
+      <!-- Default welcome card -->
+      <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Welcome to MCRAS</h1>
+        <p class="text-gray-600">Manage job descriptions, candidate applications, and dashboards efficiently.</p>
+      </div>
+      {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-gray-500 text-sm">
+        &copy; {{ now.year }} MCRAS. All rights reserved.
+      </div>
+    </footer>
+
+  </body>
+</html>

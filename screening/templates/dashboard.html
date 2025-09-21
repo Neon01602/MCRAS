@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Import Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="bg-white shadow-2xl rounded-3xl p-8 font-inter max-w-5xl mx-auto mt-10">
+
+  <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Recruiter Dashboard</h2>
+
+  <div class="mb-6 text-center">
+    <button id="refresh" class="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition font-semibold shadow">Refresh</button>
+  </div>
+
+  <div id="jobs" class="space-y-6">
+    <!-- Jobs and applicants will be injected here -->
+  </div>
+</div>
+
+<!-- Candidate Modal -->
+<div id="candidateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden font-inter">
+
+    <div class="p-6 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-gray-200">
+      <button id="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+      
+      <h3 id="modalName" class="text-2xl font-semibold mb-4 text-center text-gray-800"></h3>
+
+      <div class="space-y-3 text-gray-700 text-sm">
+        <div><strong>Email:</strong> <span id="modalEmail"></span></div>
+        <div><strong>Score:</strong> <span id="modalScore"></span></div>
+        <div><strong>Verdict:</strong> <span id="modalVerdict"></span></div>
+        <div class="text-amber-600"><strong>Missing Skills:</strong> <span id="modalMissing"></span></div>
+        <div><strong>Feedback:</strong> <span id="modalFeedback"></span></div>
+      </div>
+
+      <a id="modalResume" href="#" target="_blank" class="mt-4 inline-block w-full text-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition shadow">View Resume</a>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadCandidates() {
+  const res = await fetch('/api/candidates/');
+  const json = await res.json();
+  const jobsContainer = document.getElementById('jobs');
+  jobsContainer.innerHTML = '';
+
+  const jobGroups = {};
+  for (const c of json.results || json) {
+    const job = c.applied_to_title || 'Unknown Role';
+    if (!jobGroups[job]) jobGroups[job] = [];
+    jobGroups[job].push(c);
+  }
+
+  for (const [job, candidates] of Object.entries(jobGroups)) {
+    candidates.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+    const jobDiv = document.createElement('div');
+    jobDiv.className = 'border rounded-2xl p-4 bg-gray-50 shadow-md';
+
+    // Job title with count
+    const jobTitle = document.createElement('h3');
+    jobTitle.className = 'text-lg font-semibold mb-3 text-gray-800 flex justify-between items-center';
+    jobTitle.innerHTML = `<span>${job}</span> <span class="text-sm text-gray-500">${candidates.length} applicants</span>`;
+    jobDiv.appendChild(jobTitle);
+
+    // Action buttons
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'flex gap-2 mb-4';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'px-3 py-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition font-medium text-sm shadow';
+    viewBtn.textContent = 'View Applicants';
+    btnContainer.appendChild(viewBtn);
+
+    const jdBtn = document.createElement('button');
+    jdBtn.className = 'px-3 py-1 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition font-medium text-sm shadow';
+    jdBtn.textContent = 'View JD';
+    jdBtn.addEventListener('click', () => {
+      fetch(`/api/jobs/${candidates[0].applied_to}/`)
+        .then(res => res.json())
+        .then(job => {
+          const modal = document.createElement('div');
+          modal.className = "fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50";
+          modal.innerHTML = `
+            <div class="bg-white max-w-2xl w-full max-h-[80vh] overflow-y-auto rounded-xl shadow-lg p-6 font-inter">
+              <h2 class="text-xl font-bold text-gray-900 mb-4">${job.title}</h2>
+              <p class="text-gray-700 whitespace-pre-line leading-relaxed">${job.raw_text}</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                ${(job.parsed_keywords || []).map(k => 
+                  `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">${k}</span>`
+                ).join('')}
+              </div>
+              <button id="closeJobModal" class="mt-6 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900">
+                Close
+              </button>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          document.getElementById("closeJobModal").addEventListener("click", () => modal.remove());
+        });
+    });
+    btnContainer.appendChild(jdBtn);
+
+    jobDiv.appendChild(btnContainer);
+
+    // Applicant list
+    const listDiv = document.createElement('div');
+    listDiv.className = 'mt-2 space-y-2 hidden';
+
+    candidates.forEach(c => {
+      const candCard = document.createElement('div');
+      candCard.className = 'flex justify-between items-center px-4 py-2 bg-white border rounded-lg shadow-sm hover:shadow-md cursor-pointer transition';
+    
+      const resumeUrl = c.resume ? (c.resume.startsWith('http') ? c.resume : '/media/' + c.resume) : '#';
+      const videoUrl = c.video ? (c.video.startsWith('http') ? c.video : '/media/' + c.video) : null;
+
+      candCard.innerHTML = `
+        <div class="text-gray-800 font-medium">${c.first_name || ''} ${c.last_name || ''}</div>
+        <div class="flex items-center gap-2">
+          <span class="text-gray-600 text-sm">Score: ${c.score ?? 'N/A'}</span>
+          <a class="px-2 py-1 bg-indigo-500 text-white rounded text-xs font-medium hover:bg-indigo-600 transition shadow"
+             href="${resumeUrl}" target="_blank">
+            Resume
+          </a>
+          ${videoUrl ? `
+            <a class="px-2 py-1 bg-amber-500 text-white rounded text-xs font-medium hover:bg-amber-600 transition shadow"
+               href="${videoUrl}" target="_blank">
+              Video
+            </a>` : ''}
+        </div>
+      `;
+
+      candCard.addEventListener('click', () => openModal(c));
+      listDiv.appendChild(candCard);
+    });
+
+    viewBtn.addEventListener('click', () => listDiv.classList.toggle('hidden'));
+    jobDiv.appendChild(listDiv);
+    jobsContainer.appendChild(jobDiv);
+  }
+}
+
+function openModal(candidate) {
+  document.getElementById('modalName').textContent = `${candidate.first_name || ''} ${candidate.last_name || ''}`;
+  document.getElementById('modalEmail').textContent = candidate.email || '';
+  document.getElementById('modalScore').textContent = candidate.score ?? 'N/A';
+  document.getElementById('modalVerdict').textContent = candidate.verdict ?? '';
+  document.getElementById('modalMissing').textContent = (candidate.missing_skills || []).join(', ');
+  document.getElementById('modalFeedback').textContent = candidate.feedback || '';
+
+  const resumeUrl = candidate.resume ? (candidate.resume.startsWith('http') ? candidate.resume : '/media/' + candidate.resume) : '#';
+  document.getElementById('modalResume').href = resumeUrl;
+
+  const modal = document.getElementById('candidateModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  const modal = document.getElementById('candidateModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+});
+
+document.getElementById('refresh').addEventListener('click', loadCandidates);
+window.addEventListener('load', loadCandidates);
+</script>
+
+<style>
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: #6366f1; border-radius: 3px; }
+.font-inter { font-family: 'Inter', sans-serif; }
+</style>
+
+{% endblock %}

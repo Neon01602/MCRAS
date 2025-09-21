@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-2xl rounded-3xl">
+
+  <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Candidate Application</h2>
+
+  <form id="cand-form" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+        <input id="first_name" type="text" placeholder="John"
+          class="block w-full rounded-full border-gray-300 shadow-inner px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700 placeholder-gray-400"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+        <input id="last_name" type="text" placeholder="Doe"
+          class="block w-full rounded-full border-gray-300 shadow-inner px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700 placeholder-gray-400"/>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+      <input id="email" type="email" placeholder="john.doe@example.com" required
+        class="block w-full rounded-full border-gray-300 shadow-inner px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700 placeholder-gray-400"/>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-1">Resume (PDF/DOCX)</label>
+      <div class="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl h-40 cursor-pointer hover:border-indigo-500 transition">
+        <input id="resume" type="file" accept=".pdf,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+        <div class="text-center">
+          <svg class="mx-auto mb-2 w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v6m0-6l-3 3m3-3l3 3M12 2v6"/>
+          </svg>
+          <p class="text-gray-500">Drag & Drop PDF/DOCX or click to browse</p>
+          <p id="resume-name" class="text-sm text-gray-700 mt-1"></p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-1">Video (Optional, MP4)</label>
+      <div class="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl h-40 cursor-pointer hover:border-indigo-500 transition">
+        <input id="video" type="file" accept="video/mp4" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+        <div class="text-center">
+          <svg class="mx-auto mb-2 w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M4 6h16M4 6v12M4 18h16"/>
+          </svg>
+          <p class="text-gray-500">Drag & Drop MP4 or click to browse</p>
+          <p id="video-name" class="text-sm text-gray-700 mt-1"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Dropdown -->
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-2">Apply to Job</label>
+      <div class="relative flex items-center gap-2">
+        <select id="applied_to" class="block w-full rounded-xl border border-gray-300 shadow-sm px-4 py-3 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700 text-base">
+          <option disabled selected>Select a job...</option>
+          <!-- Options populated via JS -->
+        </select>
+        <button type="button" id="viewJobDesc" class="flex items-center gap-1 px-4 py-2 bg-indigo-500 text-white rounded-xl shadow hover:bg-indigo-600 transition text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M4 6h16M4 6v12M4 18h16"/>
+          </svg>
+          View
+        </button>
+      </div>
+    </div>
+
+    <div class="flex justify-center items-center gap-4">
+      <button type="submit"
+        class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-full shadow-lg hover:from-indigo-600 hover:to-indigo-700 transition font-semibold">
+        Apply
+      </button>
+      <div id="cand-msg" class="text-sm text-green-600 mt-1"></div>
+    </div>
+  </form>
+</div>
+
+<!-- Job Description Modal -->
+<!-- Job Dropdown Section -->
+
+
+<!-- Job Description Modal -->
+<div id="jobDescModal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg h-96 overflow-y-auto shadow-2xl relative">
+    <button id="closeJobDesc" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+    <h3 class="text-2xl font-semibold text-indigo-600 mb-4 border-b pb-2">Job Description</h3>
+    <div class="space-y-4">
+      <p id="jobDescText" class="text-gray-700 leading-relaxed text-base font-sans whitespace-pre-wrap"></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- Candidate Success Modal -->
+<div id="candSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 w-96 max-w-full shadow-lg relative">
+    <div id="candTimerBar" class="h-1 bg-indigo-500 rounded-t-xl w-full transition-all"></div>
+    <button id="closeCandModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl font-bold">&times;</button>
+    <div class="mt-4 text-center">
+      <h3 id="candStatusText" class="text-xl font-semibold text-gray-700">Application Submitted!</h3>
+      <p class="mt-2 text-gray-600" id="candStatusMsg"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Load jobs for dropdown
+const appliedTo = document.getElementById('applied_to');
+async function loadJobs() {
+  const res = await fetch('/api/jobs/list/'); // endpoint returning list of jobs [{id, title, raw_text}]
+  if(res.ok){
+    const data = await res.json();
+    data.forEach(job => {
+      const option = document.createElement('option');
+      option.value = job.id;
+      option.textContent = `#${job.id} - ${job.title}`;
+      option.dataset.description = job.raw_text;
+      appliedTo.appendChild(option);
+    });
+  }
+}
+loadJobs();
+
+// Job Description Modal
+const jobDescModal = document.getElementById('jobDescModal');
+const jobDescText = document.getElementById('jobDescText');
+document.getElementById('viewJobDesc').onclick = () => {
+  const selectedOption = appliedTo.options[appliedTo.selectedIndex];
+  jobDescText.textContent = selectedOption.dataset.description || "No description available.";
+  jobDescModal.classList.remove('hidden');
+};
+document.getElementById('closeJobDesc').onclick = () => jobDescModal.classList.add('hidden');
+
+// Candidate Form Submission
+const resumeInput = document.getElementById('resume');
+const resumeName = document.getElementById('resume-name');
+resumeInput.addEventListener('change', () => {
+  const file = resumeInput.files[0];
+  resumeName.textContent = file ? file.name : '';
+});
+
+const videoInput = document.getElementById('video');
+const videoName = document.getElementById('video-name');
+videoInput.addEventListener('change', () => {
+  const file = videoInput.files[0];
+  videoName.textContent = file ? file.name : '';
+});
+
+const candForm = document.getElementById('cand-form');
+const candSuccessModal = document.getElementById('candSuccessModal');
+const candTimerBar = document.getElementById('candTimerBar');
+const candStatusText = document.getElementById('candStatusText');
+const candStatusMsg = document.getElementById('candStatusMsg');
+const closeCandModal = document.getElementById('closeCandModal');
+
+candForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = new FormData();
+  form.append('first_name', document.getElementById('first_name').value);
+  form.append('last_name', document.getElementById('last_name').value);
+  form.append('email', document.getElementById('email').value);
+  form.append('applied_to', appliedTo.value);
+  if(resumeInput.files.length) form.append('resume', resumeInput.files[0]);
+  if(videoInput.files.length) form.append('video', videoInput.files[0]);
+
+  const csrftoken = getCookie('csrftoken');
+  const res = await fetch('/api/candidates/create/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrftoken},
+    body: form
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    const status = data.status === 'created' ? '✅ Candidate Added!' : '✅ Candidate Updated!';
+    showCandModal(status);
+  } else {
+    const text = await res.text();
+    showCandModal('❌ Error: ' + text, true);
+  }
+});
+
+function showCandModal(message, isError=false) {
+  candStatusText.textContent = message;
+  candStatusMsg.textContent = isError ? '' : 'This message will disappear in 10 seconds.';
+  candSuccessModal.classList.remove('hidden');
+
+  candTimerBar.style.width = '100%';
+  candTimerBar.style.transition = 'width 10s linear';
+  setTimeout(() => { candTimerBar.style.width = '0%'; }, 50);
+
+  const timer = setTimeout(() => {
+    candSuccessModal.classList.add('hidden');
+  }, 10000);
+
+  closeCandModal.onclick = () => {
+    candSuccessModal.classList.add('hidden');
+    clearTimeout(timer);
+  };
+}
+
+// CSRF helper
+function getCookie(name) {
+  let cookieValue = null;
+  if(document.cookie && document.cookie !== ''){
+    document.cookie.split(';').forEach(cookie=>{
+      cookie = cookie.trim();
+      if(cookie.startsWith(name+'=')){
+        cookieValue = decodeURIComponent(cookie.substring(name.length+1));
+      }
+    });
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}
