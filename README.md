@@ -1,22 +1,17 @@
-╔════════════════════════════════════════════╗
-║             MCRAS – Multi-Channel         ║
-║         Recurrent Attention System        ║
-╚════════════════════════════════════════════╝
+█████████████████████████████████████████████
+█         M C R A S – Multi-Channel        █
+█     Recurrent Attention System (MCRAS)   █
+█████████████████████████████████████████████
 
-╔════════════════════════════════════════════╗
-║ OVERVIEW                                   ║
-╚════════════════════════════════════════════╝
+[OVERVIEW]
+────────────
+MCRAS is a deep learning framework for multi-channel
+time-series data analysis. It combines Recurrent Neural
+Networks (RNNs) with Attention mechanisms to model
+temporal and inter-channel dependencies.
 
-MCRAS is a deep learning framework for processing 
-multi-channel time-series data. It uses Recurrent 
-Neural Networks (RNNs) with Attention mechanisms 
-to capture temporal dependencies and inter-channel 
-relationships efficiently.
-
-╔════════════════════════════════════════════╗
-║ TABLE OF CONTENTS                           ║
-╚════════════════════════════════════════════╝
-
+[TABLE OF CONTENTS]
+────────────────────
 1. FEATURES
 2. INSTALLATION
 3. USAGE
@@ -26,92 +21,82 @@ relationships efficiently.
 7. CONTRIBUTING
 8. LICENSE
 
-╔════════════════════════════════════════════╗
-║ FEATURES                                   ║
-╚════════════════════════════════════════════╝
+[FEATURES]
+──────────
+► Multi-Channel Input      → Process multiple channels simultaneously
+► Recurrent Architecture   → Capture temporal dependencies
+► Attention Mechanism      → Focus on important channels & time steps
+► Scalable & Efficient     → Handles large datasets effectively
 
-* Multi-Channel Input       -> Processes multiple channels simultaneously
-* Recurrent Architecture    -> Captures temporal dependencies
-* Attention Mechanism       -> Focuses on important time steps & channels
-* Scalability               -> Efficient for large-scale datasets
-
-╔════════════════════════════════════════════╗
-║ INSTALLATION                               ║
-╚════════════════════════════════════════════╝
-
-Steps to install:
-
+[INSTALLATION]
+──────────────
+Step 1: Clone the repository
 > git clone https://github.com/Neon01602/MCRAS.git
+
+Step 2: Navigate into the folder
 > cd MCRAS
+
+Step 3: Install dependencies
 > pip install -r requirements.txt
 
-╔════════════════════════════════════════════╗
-║ USAGE                                      ║
-╚════════════════════════════════════════════╝
+[USAGE]
+────────
+1. Data Format:
+   • Input  → 3D tensor: (num_samples, num_channels, num_timesteps)
+   • Output → 2D tensor: (num_samples, num_classes)
 
-[1] Data Format
-
-Input  -> 3D tensor: (num_samples, num_channels, num_timesteps)
-Output -> 2D tensor: (num_samples, num_classes)
-
-[2] Model Initialization
-
+2. Model Initialization:
 > from mcras import MCRAS
 > model = MCRAS(input_size=128, hidden_size=64, num_channels=8, num_classes=10)
 
-[3] Training
-
+3. Training:
 > from mcras import train
 > train(model, train_loader, val_loader, epochs=50, lr=0.001)
 
-[4] Evaluation
-
+4. Evaluation:
 > from mcras import evaluate
 > accuracy = evaluate(model, test_loader)
 > print("Test Accuracy:", accuracy)
 
-╔════════════════════════════════════════════╗
-║ MODEL ARCHITECTURE                          ║
-╚════════════════════════════════════════════╝
+[MODEL ARCHITECTURE]
+────────────────────
+╔═══════════════╗
+║ INPUT LAYER   ║ → Accept multi-channel time-series
+╠═══════════════╣
+║ RNN LAYERS    ║ → Capture temporal dependencies
+╠═══════════════╣
+║ ATTENTION     ║ → Focus on important channels & timesteps
+╠═══════════════╣
+║ FULLY CONNECT ║ → Output classes prediction
+╚═══════════════╝
 
-1. Input Layer        -> Multi-channel time-series input
-2. Recurrent Layers   -> Stack of RNN layers
-3. Attention Layer    -> Focuses on relevant time steps & channels
-4. Fully Connected    -> Maps to number of output classes
-
-╔════════════════════════════════════════════╗
-║ TRAINING                                   ║
-╚════════════════════════════════════════════╝
-
+[TRAINING WORKFLOW]
+────────────────────
 1. Load datasets (train & validation)
 2. Initialize MCRAS model
-3. Loss function -> Cross-Entropy Loss
-4. Optimizer     -> Adam with LR scheduler
-5. Training loop -> Iterate epochs & update weights
+3. Choose loss function → Cross-Entropy
+4. Optimizer → Adam with LR scheduler
+5. Training loop → Update weights per epoch
 
-╔════════════════════════════════════════════╗
-║ EVALUATION                                 ║
-╚════════════════════════════════════════════╝
-
-Evaluate on test data:
-
+[EVALUATION]
+────────────
+• Evaluate performance on test dataset:
 > accuracy = evaluate(model, test_loader)
 > print("Test Accuracy:", accuracy)
 
-╔════════════════════════════════════════════╗
-║ CONTRIBUTING                                ║
-╚════════════════════════════════════════════╝
-
-Steps to contribute:
-
-1. Fork the repo
-2. Create a new branch
-3. Implement changes
+[CONTRIBUTING]
+──────────────
+Steps:
+1. Fork the repository
+2. Create a feature branch
+3. Make changes
 4. Ensure tests pass
-5. Submit pull request
+5. Submit a pull request
 
-╔════════════════════════════════════════════╗
-║ LICENSE                                     ║
-╚════════════════════════════════════════════╝
+[LICENSE]
+─────────
+MCRAS is licensed under MIT License. See LICENSE file.
 
-MCRAS is under MIT License. See LICENSE file for details.
+─────────────────────────────
+© 2025 MCRAS | Deep Learning Research
+─────────────────────────────
