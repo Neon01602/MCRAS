@@ -5,9 +5,9 @@
 
 [OVERVIEW]
 ────────────
-MCRAS is a deep learning framework for multi-channel
-time-series data analysis. It combines Recurrent Neural
-Networks (RNNs) with Attention mechanisms to model
+MCRAS is a deep learning framework for multi-channel 
+time-series data analysis. It combines Recurrent Neural 
+Networks (RNNs) with Attention mechanisms to model 
 temporal and inter-channel dependencies.
 
 [TABLE OF CONTENTS]
@@ -41,19 +41,19 @@ Step 3: Install dependencies
 
 [USAGE]
 ────────
-1. Data Format:
-   • Input  → 3D tensor: (num_samples, num_channels, num_timesteps)
-   • Output → 2D tensor: (num_samples, num_classes)
+Data Format:
+• Input  → 3D tensor: (num_samples, num_channels, num_timesteps)
+• Output → 2D tensor: (num_samples, num_classes)
 
-2. Model Initialization:
+Model Initialization:
 > from mcras import MCRAS
 > model = MCRAS(input_size=128, hidden_size=64, num_channels=8, num_classes=10)
 
-3. Training:
+Training:
 > from mcras import train
 > train(model, train_loader, val_loader, epochs=50, lr=0.001)
 
-4. Evaluation:
+Evaluation:
 > from mcras import evaluate
 > accuracy = evaluate(model, test_loader)
 > print("Test Accuracy:", accuracy)
