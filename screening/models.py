@@ -1,4 +1,4 @@
-# models.py (unchanged, but kept here for completeness)
+# models.py 
 from django.db import models
 
 class JobDescription(models.Model):
@@ -26,3 +26,4 @@ class Candidate(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}".strip() or "Candidate"
+
