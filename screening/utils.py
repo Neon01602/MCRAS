@@ -17,19 +17,16 @@ from nltk.corpus import stopwords
 
 logger = logging.getLogger(__name__)
 
-# ---------------- NLTK Stopwords ----------------
 try:
     STOPWORDS = set(stopwords.words("english"))
 except LookupError:
     nltk.download('stopwords')
     STOPWORDS = set(stopwords.words("english"))
 
-# ---------------- Environment Variables ----------------
 VOSK_MODEL_PATH = os.getenv("VOSK_MODEL_PATH", "models/vosk-model-small-en-us-0.15")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
-# ---------------- Helper Functions ----------------
 def extract_important_keywords(jd_text, min_words=1, max_words=4, top_n=20):
     tokens = re.split(r"[\n,;•\-]+", jd_text.lower())
     keywords = []
@@ -52,7 +49,6 @@ def keyword_boost_dynamic(resume_text, jd_text, weight=5):
             matched.append(kw)
     return score, matched
 
-# ---------------- Resume / Document extraction ----------------
 def extract_text(file_field) -> str:
     if not file_field:
         return ""
@@ -83,7 +79,6 @@ def extract_text(file_field) -> str:
         logger.exception("Error extracting text from %s: %s", name, e)
         return content.decode("utf8", errors="ignore")
 
-# ---------------- Video transcription ----------------
 try:
     from vosk import Model, KaldiRecognizer
     VOSK_AVAILABLE = True
@@ -127,13 +122,10 @@ def transcribe_video(file_path: str) -> str:
         except Exception:
             pass
 
-# ---------------- Gemini API Integration ----------------
 def analyze_resume_with_gemini(jd_text: str, resume_text: str, api_key: str = None) -> dict:
     api_key = api_key or GEMINI_API_KEY
     jd_text = jd_text or ""
     resume_text = resume_text or ""
-
-    # --- Local Scoring ---
     def hard_skill_score(resume, jd):
         rw, jw = set(resume.lower().split()), set(jd.lower().split())
         return round(len(rw & jw) / max(len(jw), 1) * 100, 2)
@@ -196,3 +188,4 @@ def analyze_resume_with_gemini(jd_text: str, resume_text: str, api_key: str = No
         "missing_skills": gemini_result.get("missing_skills", []),
         "feedback": gemini_result.get("feedback", "")
     }
+
