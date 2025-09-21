@@ -1,1 +1,1 @@
-web: gunicorn MCRAS.wsgi:application --log-file -
+web: gunicorn mcars.wsgi:application --log-file -
