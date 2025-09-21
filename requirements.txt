@@ -10,5 +10,7 @@ sentence-transformers
 pdfplumber
 python-docx
 requests
-ffmpeg
+ffmpeg-python
 rapidfuzz
+PyPDF2
+nltk
