@@ -10,3 +10,4 @@ sentence-transformers
 pdfplumber
 python-docx
 requests
+ffmpeg
