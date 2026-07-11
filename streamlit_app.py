@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import torch
-from mcras.model import MCRAS
+from mcras.models import MCRAS
 from mcras.data_loader import preprocess_input
 
 st.set_page_config(page_title="MCRAS Streamlit App", layout="wide")
