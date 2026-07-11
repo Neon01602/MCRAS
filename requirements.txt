@@ -2,10 +2,10 @@ django
 djangorestframework
 gunicorn
 psycopg2-binary
+dj-database-url
 pandas
 numpy
 scikit-learn
-spacy
 sentence-transformers
 pdfplumber
 python-docx
@@ -15,3 +15,4 @@ rapidfuzz
 PyPDF2
 nltk
 whitenoise
+vosk
